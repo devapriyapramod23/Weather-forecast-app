@@ -6,4 +6,5 @@ scikit-learn
 xgboost
 joblib
 h5py==3.8.0
-tf_keras==2.13.1
+tensorflow==2.15.1
+tf_keras
