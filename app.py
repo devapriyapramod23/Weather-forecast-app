@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-from tensorflow.keras.models import load_model
+from tf_keras.models import load_model
 import requests
 from datetime import datetime
 end_date = datetime.today().strftime("%Y%m%d")
