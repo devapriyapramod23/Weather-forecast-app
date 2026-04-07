@@ -2,10 +2,26 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-from tf_keras.models import load_model
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 import requests
 from datetime import datetime
 end_date = datetime.today().strftime("%Y%m%d")
+
+class CompatibleInputLayer(tf.keras.layers.InputLayer):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("optional", None)
+        if "batch_shape" in kwargs and "batch_input_shape" not in kwargs:
+            kwargs["batch_input_shape"] = kwargs.pop("batch_shape")
+        else:
+            kwargs.pop("batch_shape", None)
+        super().__init__(*args, **kwargs)
+
+
+class CompatibleDense(tf.keras.layers.Dense):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("quantization_config", None)
+        super().__init__(*args, **kwargs)
 
 WINDOW_SIZE = 90
 
@@ -15,7 +31,17 @@ st.write("LSTM + XGBoost Temperature Prediction")
 # Load models
 @st.cache_resource
 def load_models():
-    lstm_model = load_model("optimized_lstm_model.keras", compile=False) 
+    custom_objects = {
+        "InputLayer": CompatibleInputLayer,
+        "Dense": CompatibleDense,
+    }
+
+    lstm_model = load_model(
+        "optimized_lstm_model.keras",
+        custom_objects=custom_objects,
+        compile=False
+    )
+
     xgb_max = joblib.load("final_xgb_model_max.joblib")
     xgb_min = joblib.load("final_xgb_model_min.joblib")
     scaler_X = joblib.load("scaler_X.joblib")
@@ -24,6 +50,7 @@ def load_models():
     known_features = joblib.load("known_features.joblib")
 
     return lstm_model, xgb_max, xgb_min, scaler_X, scaler_y, features, known_features
+
 lstm_model, xgb_max, xgb_min, scaler_X, scaler_y, features, known_features = load_models()
 
 st.subheader("Select Location")
