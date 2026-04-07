@@ -1,8 +1,9 @@
 streamlit
-pandas 
+pandas
 numpy
-tensorflow
+matplotlib
 scikit-learn
 xgboost
 joblib
-requests
+tensorflow==2.13.1
+h5py==3.8.0
